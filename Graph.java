@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  *
  * @author Aparna Shankar
@@ -130,13 +124,6 @@ public class Graph {
     public static void main(String[] args){
         int[][] am = {{0,1,0,0,0,1,0},{1,0,0,0,0,0,0},{0,0,0,1,1,0,0},{0,0,1,0,1,1,0},{0,0,1,1,0,0,1},{1,0,0,1,0,0,0},{0,0,0,0,1,0,0}};
         Graph graph = new Graph(7,am);
-        //for(int i=0;i<5;i++){
-          //  System.ot.println(Arrays.toString(graph.adjMatrix[i]));
-        //}
-        // Graph tree = graph.spanningForest();
-        //for(int i=0;i<5;i++){
-          //  System.out.println(Arrays.toString(tree.adjMatrix[i]));
-        //}
         graph.sparseTree = graph.sparsify();
         graph.printSparseTree();
     }
