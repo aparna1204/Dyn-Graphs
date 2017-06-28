@@ -1,32 +1,69 @@
 import java.util.*;
-/*
-
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 /**
  *
  * @author Aparna Shankar
  */
 public class SparseTreeNode {
-    Graph graph; //the sparse graph
+    /**
+     * the edge set of the node
+     */
+    Graph graph; 
+    /**
+     * the list of children of this node
+     */
     ArrayList children;
+    /**
+     * the number of edges
+     */
     int noOfEdges;
+    /**
+     * the number of the node. we number from root, level by level.
+     */
     int nodeNumber;
-    static SparseTreeNode[] nodes;
-    static int count = 0;
-    static Interval[][] parentMatrix;
+    /**
+     * the first vertex set to make the edge set
+     */
     int[] vn1;
+    /**
+     * the second vertex set to make the edge set
+     */
     int[] vn2;
+    /**
+     * an array with all the nodes, with each node stored at the index given by its nodeNumber.
+     */
+    static SparseTreeNode[] nodes;
+    /**
+     * the number of nodes. will increment.
+     */
+    static int count = 0;
+    /**
+     * a matrix that stores the parent information. 
+     * if j is a child of i, parentMatrix[i][j] will contain the two vertex sets
+     * (an Interval object) that j is made of
+     * 
+     */
+    static Interval[][] parentMatrix;
     
-    public SparseTreeNode(Graph graph, ArrayList children){// in this case we are trying to make a node with the graph g
+    /**
+     * constructor with a given edge set
+     * 
+     * @param graph the edge set we want to make a node with
+     * @param children the list of children of the given node
+     */
+    public SparseTreeNode(Graph graph, ArrayList children){
         this.graph = graph;        
         this.children = children;
     }
     
-    public SparseTreeNode(VertexNode vn1, VertexNode vn2, Graph g){ // in this case g is the main graph being sparsified
+    /**
+     * constructor with 2 vertex sets
+     * 
+     * @param vn1 the first vertex set
+     * @param vn2 the second vertex set
+     * @param g the main graph we are making subgraphs of (compare with parameter graph in earlier constructor)
+     */
+    public SparseTreeNode(VertexNode vn1, VertexNode vn2, Graph g){ 
         noOfEdges = 0;
         this.vn1 = vn1.vertices;
         this.vn2 = vn2.vertices;
@@ -77,6 +114,11 @@ public class SparseTreeNode {
         }
     }
     
+    /**
+     * numbers all the nodes of the tree level by level starting from 1
+     * 
+     * @param s the SparseTreeNode to number the nodes of
+     */
     public static void numberNodes(SparseTreeNode s){
         Queue <SparseTreeNode> queue = new LinkedList<>();
         queue.add(s);
@@ -89,6 +131,11 @@ public class SparseTreeNode {
         }
     }
     
+    /**
+     * string representation of the node
+     * 
+     * @return string representation of the node
+     */
     @Override
     public String toString(){
         if(noOfEdges==0) return "(" + Integer.toString(nodeNumber)+")Edges: {}";
@@ -105,6 +152,12 @@ public class SparseTreeNode {
         return s;
     }
     
+    /**
+     * computes height of the tree
+     * 
+     * @param root the topmost node of the tree
+     * @return height of the subtree with root on top
+     */
     public static int height(SparseTreeNode root){
         if(root==null) return 0;
         else if (root.children==null) return 1;
@@ -119,6 +172,12 @@ public class SparseTreeNode {
         }
     }
     
+    /**
+     * prints one level of the tree
+     * 
+     * @param root the top of the tree
+     * @param level the number of the level to be printed
+     */
     public static void printLevel(SparseTreeNode root, int level){
         if(root==null) return;
         if(level==1) System.out.print(root.toString()+"   ");
@@ -130,6 +189,11 @@ public class SparseTreeNode {
         }
     }
     
+    /**
+     * prints the entire tree starting from root
+     * 
+     * @param root the top of the tree
+     */
     public static void printTree(SparseTreeNode root){
         int h = height(root);
         for(int i=0;i<h;i++){
@@ -138,6 +202,9 @@ public class SparseTreeNode {
         }
     }
     
+    /**
+     * populates the parent information matrix with the various intervals.
+     */
     public void fillParentMatrix(){
         parentMatrix = new Interval[count][count];
         Queue<SparseTreeNode> queue = new LinkedList<>();
@@ -152,6 +219,9 @@ public class SparseTreeNode {
         }
     }
     
+    /**
+     * populates the array of nodes so we can access any node by its nodeNumber
+     */
     public void fillNodeArray(){
         nodes = new SparseTreeNode[count+1];
         Queue <SparseTreeNode> queue = new LinkedList<>();
@@ -166,29 +236,19 @@ public class SparseTreeNode {
         }
     }
     
-    public SparseTreeNode sparseCertTree(){
-        if(this.children==null || this.children.isEmpty()){
-            Graph g = this.graph.bipartiteSparseCert();
-            return new SparseTreeNode(g, null);
-        }
-        else{
-            ArrayList listOfKids = new ArrayList();
-            Graph[] arr = new Graph[this.children.size()];
-            for(int i=0;i<arr.length;i++){
-                SparseTreeNode kid = (SparseTreeNode)this.children.get(i);
-                SparseTreeNode kid2 = kid.sparseCertTree();
-                listOfKids.add(kid2);
-                arr[i] = kid2.graph;
-            }
-            Graph g = Union.union(arr);
-            g = g.bipartiteSparseCert();
-            return new SparseTreeNode(g, listOfKids);
-        }
-    }
-    
+    /**
+     * adds an edge with endpoints i,j
+     * 
+     * @param i endpoint of the edge to be added
+     * @param j endpoint of the edge to be added
+     */
     public void addEdge(int i, int j){
         if(graph.adjMatrix[i][j]==1){
             System.out.println("Edge already present");
+            return;
+        }
+        else if(i==j){
+            System.out.println("No self-loops");
             return;
         }
         else{
@@ -213,6 +273,12 @@ public class SparseTreeNode {
         }
     }
     
+    /**
+     * removes an edge with endpoints i,j
+     * 
+     * @param i endpoint of the edge to be removed
+     * @param j endpoint of the edge to be removed
+     */
     public void removeEdge(int i, int j){
         if(graph.adjMatrix[i][j]==0){
             System.out.println("Edge not present to remove");
@@ -233,6 +299,11 @@ public class SparseTreeNode {
             }
         }
     
+    /**
+     * finds the parent of the current node using the parentMatrix
+     * 
+     * @return the nodeNumber of the parent, or -1 if there is no such parent (ie node is the root of the tree)
+     */
     public int parent(){
         for(int i=0;i<count;i++){
             if (parentMatrix[i][nodeNumber]!=null) return i;
@@ -240,6 +311,9 @@ public class SparseTreeNode {
         return -1;
     }
     
+    /**
+     * repairs one particular branch of the tree, upon adding or removing an edge 
+     */
     public void repairBranch(){ // fixes the parent of this particular node then calls repairbranch() for parent
         int parent = parent();
         if(parent==-1)return;
@@ -253,7 +327,7 @@ public class SparseTreeNode {
                 arr[i] = kid.graph;
             }
             Graph g = Union.union(arr);
-            g = g.bipartiteSparseCert();
+            g = new Bipartite().sparseCert(g);
             parentnode = new SparseTreeNode(g, listOfKids);
             parentnode.repairBranch();
         }
