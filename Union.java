@@ -1,20 +1,19 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 /**
  *
  * @author Aparna Shankar
  */
 
-
-
 public class Union {
 
+    /**
+     * takes the union of two graphs with the same vertex set
+     * 
+     * @param g1 the first graph
+     * @param g2 the second graph
+     * @return a new graph with all the edges in g1 and g2
+     */
     public static Graph union(Graph g1, Graph g2){
-        //here union means same vertex set and disjoint edge set
         int num = g1.n;
         int[][] adjM = new int[num][num];
         for (int i=0;i<num;i++){
@@ -27,6 +26,12 @@ public class Union {
         return new Graph(num, adjM);
     }
     
+    /**
+     * takes the union of an array of graphs all with the same vertex set
+     * 
+     * @param arr the array of graphs
+     * @return a new graph with all the edges in all the graphs
+     */
     public static Graph union(Graph[] arr){
         int[][] g = new int[arr[0].adjMatrix.length][arr[0].adjMatrix.length];
         Graph graph = new Graph(g.length, g);
