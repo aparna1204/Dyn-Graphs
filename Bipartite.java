@@ -22,6 +22,11 @@ public class Bipartite implements Sparsify{
         }
         VertexNode vn = new VertexNode(vertices); //this creates the entire tree
         SparseTreeNode stn = new SparseTreeNode(vn, vn, g);
+        stn.fillNodeArray();
+        SparseTreeNode.parentMatrix = new Interval[SparseTreeNode.count][SparseTreeNode.count];
+        SparseTreeNode.numberNodes(stn);
+        stn.fillNodeArray();
+        stn.fillParentMatrix();
         return stn;
     }
     
@@ -43,7 +48,6 @@ public class Bipartite implements Sparsify{
         colours[0] = 1;
         while (true) { // actually while there are connected components not covered, will check later
             while (!queue.isEmpty()) {
-                System.out.println("Queue rn: " + queue.toString());
                 int v = queue.remove();
                 for (int i = 0; i < g.n; i++) {
                     if (g.adjMatrix[v][i] == 1) { // edge bw v and i
@@ -51,9 +55,7 @@ public class Bipartite implements Sparsify{
                             am[i][v] = 1;
                             am[v][i] = 1; // adding it to the tree
                             colours[i] = 3 - colours[v]; // colouring as 1 or 2 depending on v
-                            System.out.println("Colour of " + i + " is " + colours[i]);
                             count++;
-                            System.out.println("Count is " + count);
                             queue.add(i);
                         } else if (colours[i] == colours[v]) {//odd cycle
                             am[i][v] = 1;
