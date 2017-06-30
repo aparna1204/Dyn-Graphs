@@ -257,6 +257,15 @@ public class SparseTreeNode {
                 am[i][j]=1;
                 am[j][i]=1;
                 SparseTreeNode stn = new SparseTreeNode(new Graph(am.length, am), null);
+                stn.nodeNumber = ++count;
+                Interval[][] newPM = new Interval[count][count];
+                for(int k=0;k<count-1;k++){
+                    for(int l=0;l<count-1;l++){
+                        newPM[k][l]=parentMatrix[k][l];
+                    }
+                }
+                newPM[this.nodeNumber][count] = new Interval(i,i,j,j);
+                parentMatrix = newPM;
                 children.add(stn);
                 stn.repairBranch();
             }
@@ -292,6 +301,17 @@ public class SparseTreeNode {
                     if (in.contains(i, j)){
                         if(child.noOfEdges==1){
                             children.remove(child);
+                            count--;
+                            Interval[][] newPM = new Interval[count][count];
+                            int x =0,y =0;
+                            for(int k=0;k<count;k++){
+                                for(int l=0;l<count;l++){
+                                    if(x==child.nodeNumber)x++;
+                                    if(y==child.nodeNumber)y++;
+                                    newPM[k][l]=parentMatrix[x++][y++];
+                                }
+                            }
+                            parentMatrix = newPM;
                         }
                         else child.removeEdge(i, j);
                     }
