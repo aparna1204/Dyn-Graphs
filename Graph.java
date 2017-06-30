@@ -4,6 +4,7 @@
  * @author Aparna Shankar
  */
 import java.util.*;
+import java.io.*;
 
 /**
  *
@@ -82,6 +83,7 @@ public class Graph {
                 for (int u = 0; u < n; u++) {
                     if (adjMatrix[u][v] == 1 && colours[u] == 0) {
                         colours[u] = 3 - colours[v];
+                        count++;
                         queue.add(u);
                     } else if (adjMatrix[u][v] == 1 && colours[u] == colours[v]) {//odd cycle
                         return false;
@@ -97,9 +99,8 @@ public class Graph {
                         break;
                     }
                 }
-            } else {
-                break;
-            }
+            } 
+            else break;
         }
         return true;
     }
@@ -124,12 +125,34 @@ public class Graph {
      * main method for test cases
      * 
      * @param args the command line arguments
+     * @throws java.io.IOException file related exceptions i didn't want to handle
      */
-    public static void main(String[] args) {
-        int[][] am = {{0, 1, 0, 0, 0, 1, 0}, {1, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 1, 1, 0, 0}, {0, 0, 1, 0, 1, 1, 0}, {0, 0, 1, 1, 0, 0, 1}, {1, 0, 0, 1, 0, 0, 0}, {0, 0, 0, 0, 1, 0, 0}};
-        Graph graph = new Graph(7, am);
-        graph.sparseTree = new Bipartite().sparsify(graph);
-        graph.printSparseTree();
+    public static void main(String[] args) throws IOException{
+        int[][] am = new int[20][20];
+        BufferedReader reader = new BufferedReader(new FileReader("edgeset2.txt"));
+        String s = reader.readLine();
+        while(s!=null){
+            int[] endpts = new int[2];
+            int count = 0;
+            StringTokenizer st = new StringTokenizer(s);
+            while(st.hasMoreTokens()){
+                String str = st.nextToken();
+                int i = Integer.valueOf(str);
+                endpts[count++] = i;
+            }
+            am[endpts[0]][endpts[1]] = 1;
+            am[endpts[1]][endpts[0]] = 1;
+            s = reader.readLine();
+        }
+        Graph g = new Graph(20, am);
+        System.out.println(g.isBipartite(0));
+        g.sparseTree = new Bipartite().sparsify(g);
+        System.out.println(g.isBipartiteDyn());
+        g.addEdge(1,3);
+        System.out.println(g.isBipartiteDyn());
+        g.removeEdge(8,19);
+        System.out.println(g.isBipartiteDyn());
+        g.removeEdge(1,17);
     }
 
 }
