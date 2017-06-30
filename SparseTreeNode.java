@@ -67,7 +67,7 @@ public class SparseTreeNode {
         noOfEdges = 0;
         this.vn1 = vn1.vertices;
         this.vn2 = vn2.vertices;
-        System.out.println("Making a node out of "+vn1.toString()+" and "+vn2.toString());
+        //System.out.println("Making a node out of "+vn1.toString()+" and "+vn2.toString());
         graph = new Graph(g.n, new int[g.n][g.n]); //empty, will fill with edges in vn1 X vn2
         if(vn1.equals(vn2)){ // then only 3 children. also must not double count edges
             for(int i=0;i<vn1.vertices.length;i++){
@@ -107,9 +107,11 @@ public class SparseTreeNode {
                 children.add(new SparseTreeNode(vn1.children[1], vn2.children[1], g)); // i could have used 2 loops but this is clearer
             }
         }
-        for(int i=0;i<children.size();i++){
-            if(((SparseTreeNode)children.get(i)).noOfEdges==1){
-                Object empty = children.remove(i);
+        if(children!=null){
+            for(int i=0;i<children.size();i++){
+                if(((SparseTreeNode)children.get(i)).noOfEdges==1){
+                    Object empty = children.remove(i);
+                }
             }
         }
     }
@@ -125,8 +127,10 @@ public class SparseTreeNode {
         while(!queue.isEmpty()){
             SparseTreeNode stn = queue.remove();
             stn.nodeNumber = ++count;
-            for(int i=0;i<stn.children.size();i++){
-                queue.add((SparseTreeNode) stn.children.get(i));
+            if(stn.children!=null){
+                for(int i=0;i<stn.children.size();i++){
+                    queue.add((SparseTreeNode) stn.children.get(i));
+                }
             }
         }
     }
@@ -139,7 +143,7 @@ public class SparseTreeNode {
     @Override
     public String toString(){
         if(noOfEdges==0) return "(" + Integer.toString(nodeNumber)+")Edges: {}";
-        String s = "Edges: {";
+        String s = "(" + Integer.toString(nodeNumber)+")Edges: {";
         for(int i =0;i<graph.n;i++){
             for(int j=0;j<i;j++){ //for no repeats
                 if (graph.adjMatrix[i][j]==1){
@@ -206,15 +210,17 @@ public class SparseTreeNode {
      * populates the parent information matrix with the various intervals.
      */
     public void fillParentMatrix(){
-        parentMatrix = new Interval[count][count];
+        parentMatrix = new Interval[count+1][count+1];
         Queue<SparseTreeNode> queue = new LinkedList<>();
         queue.add(this);
         while(!queue.isEmpty()){
             SparseTreeNode stn = queue.remove();
-            Iterator iter = stn.children.iterator();
-            while(iter.hasNext()){
-                SparseTreeNode child = (SparseTreeNode) iter.next();
-                parentMatrix[stn.nodeNumber][child.nodeNumber] = new Interval(child.vn1[0],child.vn1[child.vn1.length-1], child.vn2[0], child.vn2[child.vn2.length-1]);
+            if(stn.children!=null){
+                Iterator iter = stn.children.iterator();
+                while(iter.hasNext()){
+                    SparseTreeNode child = (SparseTreeNode) iter.next();
+                    parentMatrix[stn.nodeNumber][child.nodeNumber] = new Interval(child.vn1[0],child.vn1[child.vn1.length-1], child.vn2[0], child.vn2[child.vn2.length-1]);
+                }
             }
         }
     }
@@ -229,9 +235,11 @@ public class SparseTreeNode {
         while(!queue.isEmpty()){
             SparseTreeNode stn = queue.remove();
             nodes[stn.nodeNumber] = stn;
-            Iterator iter = stn.children.iterator();
-            while (iter.hasNext()){
-                queue.add((SparseTreeNode)iter.next());
+            if(stn.children!=null){
+                Iterator iter = stn.children.iterator();
+                while (iter.hasNext()){
+                    queue.add((SparseTreeNode)iter.next());
+                }
             }
         }
     }
@@ -258,7 +266,7 @@ public class SparseTreeNode {
                 am[j][i]=1;
                 SparseTreeNode stn = new SparseTreeNode(new Graph(am.length, am), null);
                 stn.nodeNumber = ++count;
-                Interval[][] newPM = new Interval[count][count];
+                Interval[][] newPM = new Interval[count+1][count+1];
                 for(int k=0;k<count-1;k++){
                     for(int l=0;l<count-1;l++){
                         newPM[k][l]=parentMatrix[k][l];
@@ -266,6 +274,11 @@ public class SparseTreeNode {
                 }
                 newPM[this.nodeNumber][count] = new Interval(i,i,j,j);
                 parentMatrix = newPM;
+                SparseTreeNode[] newNodes = new SparseTreeNode[count+1];
+                System.arraycopy(nodes,0,newNodes,0,count-1);
+                newNodes[count] = stn;
+                nodes = newNodes;
+                children = new ArrayList();
                 children.add(stn);
                 stn.repairBranch();
             }
@@ -294,31 +307,47 @@ public class SparseTreeNode {
             return;
         }    
         else{
-                Iterator iter = children.iterator();
-                while (iter.hasNext()){
-                    SparseTreeNode child = (SparseTreeNode) iter.next();
-                    Interval in = new Interval(child);
-                    if (in.contains(i, j)){
-                        if(child.noOfEdges==1){
-                            children.remove(child);
-                            count--;
-                            Interval[][] newPM = new Interval[count][count];
-                            int x =0,y =0;
-                            for(int k=0;k<count;k++){
-                                for(int l=0;l<count;l++){
-                                    if(x==child.nodeNumber)x++;
-                                    if(y==child.nodeNumber)y++;
-                                    newPM[k][l]=parentMatrix[x++][y++];
+                if(children==null){
+                    graph.adjMatrix[i][j]=0;
+                    repairBranch();
+                }
+                else{
+                    Iterator iter = children.iterator();
+                    while (iter.hasNext()){
+                        SparseTreeNode child = (SparseTreeNode) iter.next();
+                        Interval in = new Interval(child);
+                        if (in.contains(i, j)){
+                            if(child.noOfEdges==1){
+                                children.remove(child);
+                                count--;
+                                Interval[][] newPM = new Interval[count+1][count+1];
+                                int x =0,y =0;
+                                for(int k=0;k<count;k++){
+                                    x=k;
+                                    for(int l=0;l<count;l++){
+                                        if(x==child.nodeNumber)x++;
+                                        if(y==child.nodeNumber)y++;
+                                        newPM[k][l]=parentMatrix[x][y++];
+                                    }
+                                    y=0;
                                 }
+                                parentMatrix = newPM;
+                                int p=0;
+                                SparseTreeNode[] newNodes = new SparseTreeNode[count+1];
+                                for(int m=0;m<count;m++){
+                                    if(p==child.nodeNumber) p++;
+                                    newNodes[m] = nodes[p];
+                                    p++;
+                                    if(m<p && newNodes[m]!=null) newNodes[m].nodeNumber--;
+                                }
+                                nodes = newNodes;
                             }
-                            parentMatrix = newPM;
+                            else child.removeEdge(i, j);
                         }
-                        else child.removeEdge(i, j);
-                    }
                 }
             }
         }
-    
+    }
     /**
      * finds the parent of the current node using the parentMatrix
      * 
@@ -342,7 +371,7 @@ public class SparseTreeNode {
             ArrayList listOfKids = new ArrayList();
             Graph[] arr = new Graph[parentnode.children.size()];
             for(int i=0;i<arr.length;i++){
-                SparseTreeNode kid = (SparseTreeNode)this.children.get(i);
+                SparseTreeNode kid = (SparseTreeNode)parentnode.children.get(i);
                 listOfKids.add(kid);
                 arr[i] = kid.graph;
             }
